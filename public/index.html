@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ßnđərX | پنل پیامکی</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ßnđərX</h1>
+      <p>پنل مدیریت پیامک</p>
+    </header>
+
+    <main>
+      <section class="card" id="login">
+        <h2>ورود مدیر</h2>
+        <input type="password" id="password" placeholder="رمز مدیریت">
+        <button onclick="login()">ورود</button>
+        <p id="loginMessage"></p>
+      </section>
+
+      <section class="card hidden" id="dashboard">
+        <h2>ارسال پیامک</h2>
+
+        <label>فایل مخاطبان CSV</label>
+        <input type="file" id="contacts" accept=".csv">
+
+        <p id="contactCount">هنوز فایلی انتخاب نشده است.</p>
+
+        <label>متن پیام</label>
+        <textarea id="message" placeholder="متن پیام خود را وارد کنید"></textarea>
+
+        <button onclick="sendMessage()">بررسی درخواست</button>
+        <p id="status"></p>
+      </section>
+    </main>
+
+    <footer>ßnđərX © 2026</footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
