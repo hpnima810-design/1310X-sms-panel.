@@ -1,0 +1,114 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Tahoma, Arial, sans-serif;
+  background: radial-gradient(circle at top, #29104f, #080611 65%);
+  color: #fff;
+  min-height: 100vh;
+  padding: 25px;
+}
+
+.container {
+  max-width: 850px;
+  margin: auto;
+}
+
+header {
+  text-align: center;
+  padding: 45px 10px;
+}
+
+header h1 {
+  font-size: 42px;
+  color: #c59aff;
+  text-shadow: 0 0 20px #9b4dff;
+}
+
+header p {
+  margin-top: 12px;
+  color: #c9b6e8;
+}
+
+.card {
+  background: rgba(30, 18, 52, 0.9);
+  border: 1px solid #7042a5;
+  border-radius: 18px;
+  padding: 25px;
+  margin-bottom: 22px;
+  box-shadow: 0 0 25px rgba(139, 70, 220, 0.2);
+}
+
+h2 {
+  color: #d4b4ff;
+  margin-bottom: 22px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 14px;
+  margin: 12px 0 18px;
+  border: 1px solid #8053b5;
+  border-radius: 10px;
+  background: #100b1d;
+  color: white;
+  font-size: 15px;
+}
+
+textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(90deg, #7838c9, #a75bff);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.15);
+}
+
+label {
+  color: #d6c0f4;
+}
+
+.hidden {
+  display: none;
+}
+
+#status, #loginMessage, #contactCount {
+  margin-top: 15px;
+  color: #d6baff;
+  line-height: 1.8;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #947eae;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+
+  header h1 {
+    font-size: 32px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+}
