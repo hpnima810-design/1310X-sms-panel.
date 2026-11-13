@@ -12,8 +12,11 @@ export async function onRequestGet({ request, env }) {
       return Response.json({ authenticated: false }, { status: 401 });
     }
 
-    const [id1, id2, signature] = parts;
-    const token = `${id1}.${id2}`;
+    const [id, expiry, signature] = parts;
+
+    if (!Number.isFinite(Number(expiry)) || Date.now() > Number(expiry)) {
+      return Response.json({ authenticated: false }, { status: 401 });
+    }
 
     const key = await crypto.subtle.importKey(
       "raw",
@@ -30,14 +33,13 @@ export async function onRequestGet({ request, env }) {
       "HMAC",
       key,
       bytes,
-      new TextEncoder().encode(token)
+      new TextEncoder().encode(`${id}.${expiry}`)
     );
 
-    if (!valid) {
-      return Response.json({ authenticated: false }, { status: 401 });
-    }
-
-    return Response.json({ authenticated: true });
+    return Response.json(
+      { authenticated: valid },
+      { status: valid ? 200 : 401 }
+    );
   } catch {
     return Response.json({ authenticated: false }, { status: 401 });
   }

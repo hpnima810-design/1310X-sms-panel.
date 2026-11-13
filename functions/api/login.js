@@ -11,6 +11,7 @@ export async function onRequestPost({ request, env }) {
 
     if (
       typeof data.password !== "string" ||
+      data.password.length > 256 ||
       data.password !== env.ADMIN_PASSWORD
     ) {
       return Response.json(
@@ -19,29 +20,33 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    const token = crypto.randomUUID() + "." + crypto.randomUUID();
+    const id = crypto.randomUUID();
+    const expiry = Date.now() + 3600000;
+    const token = `${id}.${expiry}`;
+
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(env.SESSION_SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
 
     const signature = await crypto.subtle.sign(
       "HMAC",
-      await crypto.subtle.importKey(
-        "raw",
-        new TextEncoder().encode(env.SESSION_SECRET),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"]
-      ),
+      key,
       new TextEncoder().encode(token)
     );
 
     const signed = token + "." +
       btoa(String.fromCharCode(...new Uint8Array(signature)));
 
-    return new Response(
-      JSON.stringify({ success: true, message: "ورود تأیید شد." }),
+    return Response.json(
+      { success: true },
       {
         headers: {
-          "Content-Type": "application/json",
-          "Set-Cookie": `admin_session=${signed}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600`
+          "Set-Cookie": `admin_session=${signed}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600`,
+          "Cache-Control": "no-store"
         }
       }
     );
