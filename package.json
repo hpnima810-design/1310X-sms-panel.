@@ -1,0 +1,22 @@
+{
+  "name": "1310x-sms-panel.",
+  "version": "1.0.0",
+  "description": "این بسته یک پنل آزمایشی فارسی برای Cloudflare Pages است.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hpnima810-design/1310X-sms-panel..git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hpnima810-design/1310X-sms-panel./issues"
+  },
+  "homepage": "https://github.com/hpnima810-design/1310X-sms-panel.#readme",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

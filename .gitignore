@@ -1,1 +1,6 @@
-.dev.vars\n.env\n.env.*\n
+.dev.vars
+.env
+.env.*
+node_modules/
+backup/
+public/index-backup.html

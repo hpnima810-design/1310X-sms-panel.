@@ -2,8 +2,9 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ßnđərX | پنل پیامکی</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100b1d">
+  <title>ßnđərX | پنل مدیریت</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -17,29 +18,42 @@
       <section class="card" id="login">
         <h2>ورود مدیر</h2>
         <input type="password" id="password" placeholder="رمز مدیریت">
-        <button onclick="login()">ورود</button>
+        <button id="loginButton">ورود</button>
         <p id="loginMessage"></p>
       </section>
 
-      <section class="card hidden" id="dashboard">
-        <h2>ارسال پیامک</h2>
+      <section id="dashboard" class="hidden">
+        <div class="card">
+          <h2>داشبورد مدیریت</h2>
+          <p>تعداد مخاطبان: <strong id="contactCount">۰</strong></p>
+          <p>وضعیت پنل: <strong>آماده بررسی</strong></p>
+          <button id="logoutButton" class="secondary">خروج</button>
+        </div>
 
-        <label>فایل مخاطبان CSV</label>
-        <input type="file" id="contacts" accept=".csv">
+        <div class="card">
+          <h2>مدیریت مخاطبان</h2>
+          <label for="contacts">انتخاب فایل Excel یا CSV</label>
+          <input type="file" id="contacts" accept=".xlsx,.xls,.csv">
+          <p id="fileStatus">هنوز فایلی انتخاب نشده است.</p>
+          <p>ستون شماره باید شامل عنوان phone یا شماره باشد.</p>
+        </div>
 
-        <p id="contactCount">هنوز فایلی انتخاب نشده است.</p>
-
-        <label>متن پیام</label>
-        <textarea id="message" placeholder="متن پیام خود را وارد کنید"></textarea>
-
-        <button onclick="sendMessage()">بررسی درخواست</button>
-        <p id="status"></p>
+        <div class="card">
+          <h2>متن پیام</h2>
+          <textarea id="message" maxlength="2000"
+            placeholder="متن پیام خود را بنویسید"></textarea>
+          <p id="charCount">تعداد کاراکتر: ۰</p>
+          <button id="previewButton">پیش‌نمایش پیام</button>
+          <div id="preview" class="preview hidden"></div>
+          <p id="status"></p>
+        </div>
       </section>
     </main>
 
     <footer>ßnđərX © 2026</footer>
   </div>
 
+  <script src="/vendor/xlsx.full.min.js"></script>
   <script src="/app.js"></script>
 </body>
-</html>ا
+</html>

@@ -1,16 +1,12 @@
+"use strict";
+
 let contacts = [];
 
-function showDashboard(authenticated) {
-  document.getElementById("login").classList.toggle("hidden", authenticated);
-  document.getElementById("dashboard").classList.toggle("hidden", !authenticated);
+const $ = id => document.getElementById(id);
 
-  if (authenticated && !document.getElementById("logoutButton")) {
-    const button = document.createElement("button");
-    button.id = "logoutButton";
-    button.textContent = "خروج";
-    button.onclick = logout;
-    document.getElementById("dashboard").prepend(button);
-  }
+function showDashboard(authenticated) {
+  $("login").classList.toggle("hidden", authenticated);
+  $("dashboard").classList.toggle("hidden", !authenticated);
 }
 
 async function checkSession() {
@@ -19,16 +15,17 @@ async function checkSession() {
       credentials: "same-origin",
       cache: "no-store"
     });
+
     const data = await response.json();
-    showDashboard(data.authenticated === true);
+    showDashboard(response.ok && data.authenticated === true);
   } catch {
     showDashboard(false);
   }
 }
 
 async function login() {
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("loginMessage");
+  const password = $("password").value;
+  const message = $("loginMessage");
 
   if (!password) {
     message.textContent = "رمز مدیریت را وارد کنید.";
@@ -52,7 +49,7 @@ async function login() {
       return;
     }
 
-    document.getElementById("password").value = "";
+    $("password").value = "";
     message.textContent = "";
     showDashboard(true);
   } catch {
@@ -68,100 +65,124 @@ async function logout() {
     });
   } finally {
     contacts = [];
-    document.getElementById("contacts").value = "";
-    document.getElementById("contactCount").textContent =
-      "هنوز فایلی انتخاب نشده است.";
+    $("contacts").value = "";
+    $("contactCount").textContent = "۰";
+    $("fileStatus").textContent = "هنوز فایلی انتخاب نشده است.";
+    $("message").value = "";
+    $("charCount").textContent = "تعداد کاراکتر: ۰";
+    $("preview").classList.add("hidden");
+    $("status").textContent = "";
     showDashboard(false);
   }
 }
 
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let field = "";
-  let quoted = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-
-    if (char === '"' && quoted && text[i + 1] === '"') {
-      field += '"';
-      i++;
-    } else if (char === '"') {
-      quoted = !quoted;
-    } else if (char === "," && !quoted) {
-      row.push(field.trim());
-      field = "";
-    } else if ((char === "\n" || char === "\r") && !quoted) {
-      if (char === "\r" && text[i + 1] === "\n") i++;
-      row.push(field.trim());
-      if (row.some(value => value !== "")) rows.push(row);
-      row = [];
-      field = "";
-    } else {
-      field += char;
-    }
-  }
-
-  row.push(field.trim());
-  if (row.some(value => value !== "")) rows.push(row);
-
-  return rows;
+function normalizePhone(value) {
+  return String(value || "").trim().replace(/\s+/g, "");
 }
 
-document.getElementById("contacts").addEventListener("change", async event => {
-  const file = event.target.files[0];
-  const count = document.getElementById("contactCount");
-
-  contacts = [];
-
-  if (!file) {
-    count.textContent = "هنوز فایلی انتخاب نشده است.";
-    return;
+async function readContacts(file) {
+  if (!window.XLSX) {
+    throw new Error("کتابخانه Excel بارگذاری نشده است.");
   }
 
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: "array" });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+  if (!sheet) {
+    throw new Error("برگه‌ای در فایل پیدا نشد.");
+  }
+
+  const rows = XLSX.utils.sheet_to_json(sheet, {
+    header: 1,
+    defval: ""
+  });
+
+  if (rows.length < 2) {
+    throw new Error("فایل مخاطبان خالی است.");
+  }
+
+  const headers = rows[0].map(value =>
+    String(value).trim().toLowerCase()
+  );
+
+  const phoneIndex = headers.findIndex(value =>
+    ["phone", "mobile", "number", "شماره", "موبایل", "تلفن"].includes(value)
+  );
+
+  if (phoneIndex === -1) {
+    throw new Error("ستون شماره باید عنوان phone یا شماره یا موبایل داشته باشد.");
+  }
+
+  const unique = new Set();
+
+  for (const row of rows.slice(1)) {
+    const phone = normalizePhone(row[phoneIndex]);
+
+    if (phone) unique.add(phone);
+  }
+
+  return [...unique];
+}
+
+$("loginButton").addEventListener("click", login);
+
+$("password").addEventListener("keydown", event => {
+  if (event.key === "Enter") login();
+});
+
+$("logoutButton").addEventListener("click", logout);
+
+$("contacts").addEventListener("change", async event => {
+  const file = event.target.files[0];
+
+  contacts = [];
+  $("contactCount").textContent = "۰";
+
+  if (!file) return;
+
+  $("fileStatus").textContent = "در حال خواندن فایل...";
+
   try {
-    const rows = parseCSV(await file.text());
+    contacts = await readContacts(file);
 
-    if (rows.length < 2) {
-      count.textContent = "فایل CSV خالی یا نامعتبر است.";
-      return;
-    }
+    $("contactCount").textContent =
+      contacts.length.toLocaleString("fa-IR");
 
-    const headers = rows[0].map(value => value.toLowerCase());
-    const phoneIndex = headers.indexOf("phone");
-    const consentIndex = headers.indexOf("consent");
-
-    if (phoneIndex === -1 || consentIndex === -1) {
-      count.textContent = "ستون‌های phone و consent باید در فایل باشند.";
-      return;
-    }
-
-    const seen = new Set();
-
-    for (const row of rows.slice(1)) {
-      const phone = (row[phoneIndex] || "").trim();
-      const consent = (row[consentIndex] || "").trim().toLowerCase();
-
-      if (
-        phone &&
-        ["yes", "true", "1", "بله"].includes(consent) &&
-        !seen.has(phone)
-      ) {
-        seen.add(phone);
-        contacts.push(phone);
-      }
-    }
-
-    count.textContent = `${contacts.length} شماره با رضایت ثبت‌شده شناسایی شد.`;
-  } catch {
-    count.textContent = "خواندن فایل با خطا مواجه شد.";
+    $("fileStatus").textContent =
+      `${contacts.length.toLocaleString("fa-IR")} شماره یکتا شناسایی شد.`;
+  } catch (error) {
+    $("fileStatus").textContent = error.message;
+    contacts = [];
   }
 });
 
-function sendMessage() {
-  document.getElementById("status").textContent =
-    "ارسال پیامک در این نسخه غیرفعال است؛ فقط بررسی فایل و رضایت انجام می‌شود.";
-}
+$("message").addEventListener("input", event => {
+  $("charCount").textContent =
+    "تعداد کاراکتر: " +
+    event.target.value.length.toLocaleString("fa-IR");
+
+  $("preview").classList.add("hidden");
+});
+
+$("previewButton").addEventListener("click", () => {
+  const message = $("message").value.trim();
+
+  if (!message) {
+    $("status").textContent = "ابتدا متن پیام را وارد کنید.";
+    return;
+  }
+
+  if (contacts.length === 0) {
+    $("status").textContent = "ابتدا فایل مخاطبان را انتخاب کنید.";
+    return;
+  }
+
+  $("preview").textContent = message;
+  $("preview").classList.remove("hidden");
+
+  $("status").textContent =
+    `پیش‌نمایش آماده است. تعداد مخاطبان: ${contacts.length.toLocaleString("fa-IR")} — ارسال واقعی هنوز فعال نیست.`;
+});
 
 checkSession();
