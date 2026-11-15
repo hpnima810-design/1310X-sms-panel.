@@ -1,0 +1,1 @@
+export async function onRequestPost(){return Response.json({success:false,message:'ارسال پیامک در این نسخه غیرفعال است؛ اتصال رسمی و بررسی‌های لازم باید تکمیل شوند.'},{status:503})}

@@ -1,0 +1,2 @@
+import {verifySession} from '../_lib/session.js';
+export async function onRequest({request,next,env}){const url=new URL(request.url);if(['/api/login','/api/session','/api/logout'].includes(url.pathname))return next();if(['POST','PUT','PATCH','DELETE'].includes(request.method)){const origin=request.headers.get('Origin');if(!origin||origin!==url.origin)return Response.json({success:false,message:'مبدأ درخواست نامعتبر است.'},{status:403})}if(!await verifySession(request,env))return Response.json({success:false,message:'ابتدا وارد پنل شوید.'},{status:401});return next()}

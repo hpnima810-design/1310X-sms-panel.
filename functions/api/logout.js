@@ -1,12 +1,2 @@
-export async function onRequestPost() {
-  return new Response(
-    JSON.stringify({ success: true }),
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "Set-Cookie": "admin_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0",
-        "Cache-Control": "no-store"
-      }
-    }
-  );
-}
+import {cookie} from '../_lib/session.js';
+export async function onRequestPost({request}){const origin=request.headers.get('Origin');if(!origin||origin!==new URL(request.url).origin)return Response.json({success:false},{status:403});return new Response(JSON.stringify({success:true}),{headers:{'Content-Type':'application/json','Cache-Control':'no-store','Set-Cookie':cookie('',0)}})}

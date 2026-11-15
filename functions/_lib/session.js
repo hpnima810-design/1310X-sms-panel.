@@ -1,0 +1,7 @@
+const enc=new TextEncoder();
+function b64u(bytes){let s='';for(const b of bytes)s+=String.fromCharCode(b);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'')}
+function unb64u(s){s=s.replace(/-/g,'+').replace(/_/g,'/');s+='='.repeat((4-s.length%4)%4);return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
+async function key(secret,usage){return crypto.subtle.importKey('raw',enc.encode(secret),{name:'HMAC',hash:'SHA-256'},false,usage)}
+export async function createSession(secret){const payload=b64u(enc.encode(JSON.stringify({exp:Math.floor(Date.now()/1000)+3600,nonce:b64u(crypto.getRandomValues(new Uint8Array(24)))})));const sig=await crypto.subtle.sign('HMAC',await key(secret,['sign']),enc.encode(payload));return payload+'.'+b64u(new Uint8Array(sig))}
+export async function verifySession(request,env){try{if(!env.SESSION_SECRET)return false;const h=request.headers.get('Cookie')||'',m=h.match(/(?:^|;\s*)admin_session=([^;]+)/);if(!m)return false;const p=m[1].split('.');if(p.length!==2)return false;const valid=await crypto.subtle.verify('HMAC',await key(env.SESSION_SECRET,['verify']),unb64u(p[1]),enc.encode(p[0]));if(!valid)return false;const d=JSON.parse(new TextDecoder().decode(unb64u(p[0])));return Number.isInteger(d.exp)&&d.exp>Math.floor(Date.now()/1000)}catch{return false}}
+export const cookie=(v,age=3600)=>`admin_session=${v}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${age}`;
